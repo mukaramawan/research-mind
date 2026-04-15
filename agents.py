@@ -1,13 +1,13 @@
 from langchain.agents import create_agent
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-from langchain_mistralai import MistralAI
+from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 from tools import search_web, scrape_web
 
 load_dotenv()
 
-llm = MistralAI(model="mistral-medium-latest", temperature=0)
+llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0)
 
 def build_search_agent():
     return create_agent(

@@ -16,7 +16,7 @@ def search_web(query: str) -> str:
     response = tavily.search(query, max_results=5)
     results = []
     for r in response['results']:
-        results.append(f"title: {r['title']}\nURL: {r['url']}\nSnippet: {r['content'][:300]}\n")
+        results.append(f"title: {r['title']}\nURL: {r['url']}\nSnippet: {r['content'][:400]}\n")
 
     return "\n----\n".join(results)
 
@@ -30,8 +30,8 @@ def scrape_web(url: str) -> str:
         soup = BeautifulSoup(response.text, 'html.parser')
         for tag in soup(['script', 'style', 'header', 'footer', 'nav', 'aside']):
             tag.decompose()
-        return soup.get_text(separator=" ", strip=True)[:3000]
+        return soup.get_text(separator=" ", strip=True)[:3500]
     except Exception as e:
         return f"Error scraping the web: {str(e)}"
     
-print(scrape_web.invoke("https://www.bbc.com/news/articles/cjr9qrnp821o"))
+# print(scrape_web.invoke("https://www.bbc.com/news/articles/cjr9qrnp821o"))
