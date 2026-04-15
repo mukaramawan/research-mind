@@ -1,7 +1,5 @@
 import os
-
 import streamlit as st
-
 
 st.set_page_config(
 	page_title="Research Mind",
@@ -10,21 +8,17 @@ st.set_page_config(
 	initial_sidebar_state="collapsed",
 )
 
-
 try:
 	from pipeline import run_research_pipeline
 except Exception as exc:  # pragma: no cover - surfaced in the app UI
 	st.error(f"Unable to load the research pipeline: {exc}")
 	st.stop()
 
-
 def inject_styles() -> None:
 	st.markdown(
 		"""
 		<style>
 		@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&display=swap');
-
-
 
 		:root {
 			--bg: #f6f9ff;
@@ -34,6 +28,8 @@ def inject_styles() -> None:
 			--muted: #5b667a;
 			--accent: #2563eb;
 			--accent-2: #06b6d4;
+			--button-bg: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+			--button-text: #ffffff;
 		}
 
 		.stApp {
@@ -43,6 +39,7 @@ def inject_styles() -> None:
 				linear-gradient(180deg, #f8fbff 0%, #eef6ff 100%);
 			color: var(--text);
 			font-family: 'Inter', sans-serif;
+			color-scheme: light;
 		}
 
 		.block-container {
@@ -104,13 +101,24 @@ def inject_styles() -> None:
 			color: var(--text);
 		}
 
-		div[data-testid="stTextInput"] input {
+		div[data-testid="stTextInputRootElement"] {
 			border-radius: 16px;
-			border: 1px solid rgba(37, 99, 235, 0.15);
-			background: rgba(255, 255, 255, 0.94);
-			color: var(--text);
-			padding: 0.85rem 1rem;
+			border: 1px solid rgba(148, 163, 184, 0.7);
+			background: #ffffff !important; /* Changed to solid white */
 			box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+			transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+		}
+
+		div[data-testid="stTextInput"] input {
+			background: #ffffff !important; /* Changed to solid white */
+			border: none !important;
+			outline: none !important;
+			box-shadow: none !important;
+			color: var(--text) !important;
+			caret-color: var(--accent) !important;
+			padding: 0.85rem 1rem !important;
+			-webkit-text-fill-color: var(--text) !important;
+			position: relative;
 		}
 
 		div[data-testid="stTextInput"] input::placeholder {
@@ -118,30 +126,57 @@ def inject_styles() -> None:
 			opacity: 1;
 		}
 
-		div[data-testid="stTextInput"] input:focus {
-			background: rgba(255, 255, 255, 1);
-			color: var(--text);
+		div[data-testid="stTextInputRootElement"]:focus-within {
+			border-color: rgba(37, 99, 235, 0.85);
+			background: #ffffff !important;
+			box-shadow:
+				0 0 0 4px rgba(37, 99, 235, 0.14),
+				0 12px 28px rgba(37, 99, 235, 0.08),
+				inset 0 1px 0 rgba(255, 255, 255, 0.82);
 		}
 
-		div[data-testid="stButton"] > button {
+		div[data-testid="stTextInput"] input:focus-visible {
+			outline: none;
+		}
+
+		/* Fix for the button styling including form submit buttons */
+		div[data-testid="stFormSubmitButton"] > button,
+		div[data-testid="stBaseButton-secondary"] > button {
 			width: 100%;
-			border: 1px solid #09090F !important;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			border: 1px solid rgba(37, 99, 235, 0.95) !important;
 			border-radius: 999px;
-			padding: 0.85rem 1.25rem;
-			background: #09090F !important;
-			color: #FFFFFF !important;
+			background: var(--button-bg) !important;
+			color: var(--button-text) !important;
 			font-weight: 700;
 			letter-spacing: 0.02em;
-			box-shadow: 0 16px 32px rgba(15, 23, 42, 0.18);
+			box-shadow: 0 16px 32px rgba(37, 99, 235, 0.24);
+			cursor: pointer;
 			transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
 		}
 
-		div[data-testid="stButton"] > button:hover {
-			background: #FFFFFF !important;
-			color: #09090F !important;
-			border-color: #09090F !important;
+		div[data-testid="stFormSubmitButton"] > button p,
+		div[data-testid="stBaseButton-secondary"] > button p {
+			color: var(--button-text) !important;
+		}
+
+		div[data-testid="stFormSubmitButton"] > button:hover,
+		div[data-testid="stBaseButton-secondary"] > button:hover {
+			background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%) !important;
+			color: var(--button-text) !important;
+			border-color: rgba(37, 99, 235, 1) !important;
 			transform: translateY(-1px);
-			box-shadow: 0 18px 38px rgba(15, 23, 42, 0.12);
+			box-shadow: 0 18px 38px rgba(37, 99, 235, 0.28);
+		}
+
+		div[data-testid="stFormSubmitButton"] > button:focus-visible,
+		div[data-testid="stBaseButton-secondary"] > button:focus-visible {
+			outline: none;
+			box-shadow:
+				0 0 0 4px rgba(37, 99, 235, 0.2),
+				0 16px 32px rgba(37, 99, 235, 0.24);
 		}
 
 		div[data-testid="stTabs"] {
@@ -188,14 +223,12 @@ def inject_styles() -> None:
 		unsafe_allow_html=True,
 	)
 
-
 def as_text(value: object) -> str:
 	if value is None:
 		return ""
 	if isinstance(value, str):
 		return value
 	return str(value)
-
 
 inject_styles()
 
@@ -220,14 +253,12 @@ if "research_state" not in st.session_state:
 if "research_topic" not in st.session_state:
 	st.session_state.research_topic = ""
 
-
 with st.form("research_form", clear_on_submit=False):
 	topic = st.text_input(
-		"Topic",
+		"Enter Search Topic:",
 		placeholder="e.g. solid-state batteries in consumer electronics",
 	)
 	submitted = st.form_submit_button("Run research")
-
 
 if submitted:
 	topic = topic.strip()
@@ -241,7 +272,6 @@ if submitted:
 			st.session_state.research_state = state
 		except Exception as exc:
 			st.error(f"Research run failed: {exc}")
-
 
 state = st.session_state.research_state
 if state:
